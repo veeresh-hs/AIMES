@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Model performance - AIMES{% endblock %}
+{% block body %}
+<h1>Model performance</h1>
+<p class="lede">Every figure here is read from the training report written by <code>scripts/train_all.py</code>. Nothing on this page is typed in by hand.</p>
+
+<h2>Layers loaded right now</h2>
+<div class="card">
+  <div class="scroll"><table>
+    <thead><tr><th>Layer</th><th>State</th></tr></thead>
+    <tbody>{% for name, layer in layers.items() %}
+      <tr><td>{{ layer.label }}</td>
+          <td>{% if layer.loaded %}<span class="chip safe">trained model loaded</span>
+              {% else %}<span class="chip watch">rule-based or unavailable</span>{% endif %}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div>
+
+<h2>Model versions</h2>
+{% if versions %}
+<div class="card scroll">
+  <table>
+    <thead><tr><th>Version</th><th>Active</th><th>Created</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>PR-AUC</th><th>FPR</th><th>Latency</th></tr></thead>
+    <tbody>
+    {% for version in versions %}
+      <tr>
+        <td class="mono">{{ version.version }}</td>
+        <td>{% if version.active %}<span class="chip safe">active</span>{% endif %}</td>
+        <td class="mono">{{ version.created_at[:16].replace('T',' ') }}</td>
+        {% for key in ['accuracy','precision','recall','f1','roc_auc','pr_auc','fpr'] %}
+          <td class="mono">{{ version.metrics.get(key, 0)|round(4) }}</td>
+        {% endfor %}
+        <td class="mono">{{ version.metrics.get('latency_ms', 0)|round(1) }} ms</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="note">A new version becomes active only if macro-F1 improves and the false-positive rate does not get worse.</p>
+</div>
+{% else %}
+<div class="card"><p class="empty">No trained model yet. Run <code>python scripts/train_all.py</code>.</p></div>
+{% endif %}
+
+{% for version, report in reports.items() %}
+<h2>Version {{ version }} training report</h2>
+<div class="card">
+  {% if report.synthetic %}<p class="warn note">This version was trained on generated smoke-test data. The numbers below verify the pipeline, they are not experimental results.</p>{% endif %}
+  <p class="note">Split: {{ report.split_strategy }} &middot; lexical layer: {{ report.lexical.selected }} &middot; semantic backend: {{ report.semantic.backend }} &middot; trained in {{ report.train_seconds }}s in {{ report.mode }} mode.</p>
+  <h3>Baseline comparison on the validation split</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Algorithm</th><th>Accuracy</th><th>Macro F1</th><th>Train seconds</th><th>Latency</th></tr></thead>
+    <tbody>{% for name, metrics in report.lexical.per_model.items() %}
+      <tr><td>{{ name }}</td><td class="mono">{{ metrics.accuracy|round(4) }}</td>
+          <td class="mono">{{ metrics.macro_f1|round(4) }}</td>
+          <td class="mono">{{ metrics.train_seconds }}</td>
+          <td class="mono">{{ metrics.latency_ms }} ms</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <h3>Fitted fusion weights</h3>
+  <p class="note">{{ report.fusion.note }}</p>
+  <div class="strip">
+    {% set top = report.fusion.weights.values()|max %}
+    {% for name, weight in report.fusion.weights.items() %}
+      <div class="row">
+        <span class="name">{{ name }}</span>
+        <span class="bar"><i style="width: {{ (weight / top * 100)|round|int if top else 0 }}%"></i></span>
+        <span class="val">{{ weight|round(3) }}</span>
+      </div>
+    {% endfor %}
+  </div>
+  <h3>Held-out test split</h3>
+  <p class="note">
+    Accuracy {{ report.ensemble_test_metrics.accuracy|round(4) }} &middot;
+    F1 {{ report.ensemble_test_metrics.f1|round(4) }} &middot;
+    ROC-AUC {{ report.ensemble_test_metrics.roc_auc|round(4) }} &middot;
+    FPR {{ report.ensemble_test_metrics.fpr|round(4) }} &middot;
+    mean {{ report.ensemble_test_metrics.latency_ms|round(1) }} ms,
+    p95 {{ report.ensemble_test_metrics.latency_p95_ms|round(1) }} ms.
+    At 95% recall the threshold would be {{ report.operating_point_recall95.threshold|round(3) }} with FPR {{ report.operating_point_recall95.fpr|round(4) }}.
+  </p>
+</div>
+{% endfor %}
+{% endblock %}

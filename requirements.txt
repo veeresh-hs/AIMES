@@ -1,0 +1,34 @@
+# Core (needed for training, detection and the dashboard)
+fastapi>=0.110
+uvicorn[standard]>=0.27
+jinja2>=3.1
+python-multipart>=0.0.9
+scikit-learn>=1.3
+numpy>=1.24
+pandas>=2.0
+joblib>=1.3
+beautifulsoup4>=4.12
+lxml>=5.0
+
+# Gmail (OAuth 2.0, read-only by default)
+google-api-python-client>=2.120
+google-auth-httplib2>=0.2
+google-auth-oauthlib>=1.2
+
+# Recommended: better accuracy / safety, each has a working fallback if absent
+tldextract>=5.1          # correct public-suffix handling for domains
+rapidfuzz>=3.6           # faster lookalike-domain distance
+cryptography>=42.0       # encrypts the stored OAuth token
+plyer>=2.1               # desktop notifications
+oletools>=0.60           # static macro detection in Office attachments
+shap>=0.44               # per-layer contribution explanations
+matplotlib>=3.8          # figures for the report
+
+# Tests
+pytest>=8.0
+httpx>=0.27              # required by fastapi's TestClient
+
+# ADVANCED mode only - installs ~2 GB, skip on a low-RAM laptop
+# torch>=2.2
+# transformers>=4.38
+# sentence-transformers>=2.6

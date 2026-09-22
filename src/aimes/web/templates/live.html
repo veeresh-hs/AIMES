@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% from "macros.html" import email_rows %}
+{% block title %}Live monitor - AIMES{% endblock %}
+{% block body %}
+<h1>Live monitor</h1>
+<p class="lede" data-live-status>Connecting to the analysis stream.</p>
+
+<div class="card" style="margin-bottom:14px">
+  <div class="row-form">
+    <button data-monitor="start">Start monitoring</button>
+    <button class="ghost" data-monitor="poll">Check now</button>
+    <button class="ghost" data-monitor="stop">Stop</button>
+    <span class="note" data-monitor-status>
+      {% if monitor.running %}Running, polling every {{ monitor.interval_seconds }}s.{% else %}Stopped.{% endif %}
+      {% if monitor.last_poll %} Last check {{ monitor.last_poll[11:19] }} UTC.{% endif %}
+      {% if monitor.last_error %} Last error: {{ monitor.last_error }}{% endif %}
+    </span>
+  </div>
+</div>
+
+<div class="scroll"><table>
+  <thead><tr><th>Time</th><th>From</th><th>Subject</th><th>Class</th><th>Risk</th><th>Conf.</th><th>Band</th></tr></thead>
+  <tbody data-live-body>
+  {% for row in recent %}
+    <tr>
+      <td class="mono">{{ row.analyzed_at[11:19] }}</td>
+      <td class="trunc">{{ row.sender }}</td>
+      <td class="trunc"><a href="/email/{{ row.id }}">{{ row.subject or '(no subject)' }}</a></td>
+      <td>{{ row.base_class.replace('_',' ').title() }}</td>
+      <td class="risk">{{ row.risk_score }}</td>
+      <td class="mono">{{ (row.confidence*100)|round|int }}%</td>
+      <td><span class="chip">{{ row.band.replace('_',' ') }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

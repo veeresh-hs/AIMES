@@ -1,0 +1,251 @@
+{
+  "version": "v1",
+  "synthetic": false,
+  "split_strategy": "time",
+  "class_counts": {
+    "train": {
+      "PROMOTIONAL_SPAM": 1563,
+      "HAM": 2564
+    },
+    "val": {
+      "HAM": 709,
+      "PROMOTIONAL_SPAM": 175
+    },
+    "test": {
+      "HAM": 839,
+      "PROMOTIONAL_SPAM": 46
+    },
+    "cross_corpus": {}
+  },
+  "lexical": {
+    "selected": "LinearSVC",
+    "per_model": {
+      "MultinomialNB": {
+        "accuracy": 0.9819004524886877,
+        "macro_f1": 0.9718623675080371,
+        "weighted_f1": 0.9820145216361952,
+        "per_class_f1": {
+          "HAM": 0.9886685552407932,
+          "PROMOTIONAL_SPAM": 0.9550561797752809,
+          "PHISHING": 0.0
+        },
+        "confusion_matrix": [
+          [
+            698,
+            11,
+            0
+          ],
+          [
+            5,
+            170,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "labels": [
+          "HAM",
+          "PROMOTIONAL_SPAM",
+          "PHISHING"
+        ],
+        "train_seconds": 0.02,
+        "latency_ms": 0.0081
+      },
+      "LogisticRegression": {
+        "accuracy": 0.9683257918552036,
+        "macro_f1": 0.9528910205169199,
+        "weighted_f1": 0.9691798898739229,
+        "per_class_f1": {
+          "HAM": 0.9798561151079137,
+          "PROMOTIONAL_SPAM": 0.9259259259259259,
+          "PHISHING": 0.0
+        },
+        "confusion_matrix": [
+          [
+            681,
+            28,
+            0
+          ],
+          [
+            0,
+            175,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "labels": [
+          "HAM",
+          "PROMOTIONAL_SPAM",
+          "PHISHING"
+        ],
+        "train_seconds": 0.5,
+        "latency_ms": 0.0031
+      },
+      "LinearSVC": {
+        "accuracy": 0.9819004524886877,
+        "macro_f1": 0.972435942408581,
+        "weighted_f1": 0.9821927925683821,
+        "per_class_f1": {
+          "HAM": 0.9885877318116976,
+          "PROMOTIONAL_SPAM": 0.9562841530054644,
+          "PHISHING": 0.0
+        },
+        "confusion_matrix": [
+          [
+            693,
+            16,
+            0
+          ],
+          [
+            0,
+            175,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "labels": [
+          "HAM",
+          "PROMOTIONAL_SPAM",
+          "PHISHING"
+        ],
+        "train_seconds": 0.84,
+        "latency_ms": 0.0073
+      },
+      "RandomForest": {
+        "accuracy": 0.8246606334841629,
+        "macro_f1": 0.7769039768795538,
+        "weighted_f1": 0.8392561886811707,
+        "per_class_f1": {
+          "HAM": 0.880123743232792,
+          "PROMOTIONAL_SPAM": 0.6736842105263158,
+          "PHISHING": 0.0
+        },
+        "confusion_matrix": [
+          [
+            569,
+            140,
+            0
+          ],
+          [
+            15,
+            160,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "labels": [
+          "HAM",
+          "PROMOTIONAL_SPAM",
+          "PHISHING"
+        ],
+        "train_seconds": 1.58,
+        "latency_ms": 0.179
+      }
+    }
+  },
+  "semantic": {
+    "backend": "tfidf-svd-lsa",
+    "classes": [
+      "HAM",
+      "PROMOTIONAL_SPAM"
+    ]
+  },
+  "anomaly": {
+    "trained": true,
+    "n_ham": 2564,
+    "n_features": 44
+  },
+  "url": {
+    "trained": false,
+    "reason": "no URL corpus in data/raw/url_dataset"
+  },
+  "fusion": {
+    "weights": {
+      "lexical": 0.6491734302688958,
+      "transformer": 0.0,
+      "semantic": 0.0505307017665904,
+      "anomaly": 0.17583821948277836,
+      "url": 0.021562958749812452,
+      "header": 0.030224779574437446,
+      "attachment": 0.0,
+      "impersonation": 0.01611144001245735,
+      "social_engineering": 0.05655847014502821
+    },
+    "note": "weights are normalised non-negative logistic-regression coefficients",
+    "n_val": 884
+  },
+  "ensemble_test_metrics": {
+    "accuracy": 0.9740112994350283,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "threshold": 0.6,
+    "n": 885,
+    "roc_auc": 0.9966575115302896,
+    "pr_auc": 0.9106810319364629,
+    "tn": 816,
+    "fp": 23,
+    "fn": 0,
+    "tp": 46,
+    "fpr": 0.027413587604290822,
+    "fnr": 0.0,
+    "latency_ms": 27.5356667372135,
+    "latency_p95_ms": 36.773517006076844,
+    "macro_f1": 0.8219881012511119
+  },
+  "base_class_metrics": {
+    "accuracy": 0.9491525423728814,
+    "macro_f1": 0.8219881012511119,
+    "weighted_f1": 0.9568028095526669,
+    "per_class_f1": {
+      "HAM": 0.9724433557868953,
+      "PROMOTIONAL_SPAM": 0.6715328467153284,
+      "PHISHING": 0.0
+    },
+    "confusion_matrix": [
+      [
+        794,
+        45,
+        0
+      ],
+      [
+        0,
+        46,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "labels": [
+      "HAM",
+      "PROMOTIONAL_SPAM",
+      "PHISHING"
+    ]
+  },
+  "operating_point_recall95": {
+    "target_recall": 0.95,
+    "threshold": 0.79,
+    "recall": 0.9565217391304348,
+    "fpr": 0.015494636471990465
+  },
+  "train_seconds": 71.2,
+  "mode": "ADVANCED"
+}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Threat analytics - AIMES{% endblock %}
+{% block body %}
+<h1>Threat analytics</h1>
+<p class="lede">Distributions over every email this system has analysed. With a small sample these shapes are not stable; the figures for the report come from <code>scripts/run_experiments.py</code>, which evaluates held-out corpora rather than your inbox.</p>
+
+<h2>Risk score distribution</h2>
+<div class="card">
+  {% set peak = stats.risk_histogram.values()|max if stats.risk_histogram else 0 %}
+  {% if peak %}
+    <div class="spark" style="height:110px">
+      {% for bucket in range(0, 100, 10) %}
+        <div class="{% if bucket >= 60 %}t{% endif %}"
+             style="height: {{ ((stats.risk_histogram.get(bucket, 0) / peak) * 100)|round|int }}%"
+             title="{{ bucket }}-{{ bucket+9 }}: {{ stats.risk_histogram.get(bucket, 0) }}"></div>
+      {% endfor %}
+    </div>
+    <div class="axis"><span>0</span><span>50</span><span>100</span></div>
+  {% else %}<p class="empty">No emails analysed yet.</p>{% endif %}
+</div>
+
+<div class="grid g2" style="margin-top:14px">
+  <div class="card">
+    <h3>By classification</h3>
+    <table>{% for key, value in stats.by_class.items() %}
+      <tr><td>{{ key.replace('_',' ').title() }}</td><td class="mono">{{ value }}</td></tr>{% endfor %}</table>
+  </div>
+  <div class="card">
+    <h3>By risk band</h3>
+    <table>{% for key, value in stats.by_band.items() %}
+      <tr><td>{{ key.replace('_',' ').title() }}</td><td class="mono">{{ value }}</td></tr>{% endfor %}</table>
+  </div>
+</div>
+
+<h2>Feedback so far</h2>
+<div class="card">
+  {% if stats.feedback %}
+    <table>{% for key, value in stats.feedback.items() %}<tr><td>Marked {{ key }}</td><td class="mono">{{ value }}</td></tr>{% endfor %}</table>
+    <p class="note">Corrections marked "incorrect" are the ones that change the next training run.</p>
+  {% else %}
+    <p class="note">No feedback recorded yet. Open any analysed email and say whether the call was right; those corrections feed the retraining pipeline.</p>
+  {% endif %}
+</div>
+
+<h2>Daily volume</h2>
+<div class="card">
+  <div class="scroll"><table>
+    <thead><tr><th>Day</th><th>Analysed</th><th>High risk or critical</th></tr></thead>
+    <tbody>{% for day in stats.timeline %}
+      <tr><td class="mono">{{ day.d }}</td><td class="mono">{{ day.n }}</td><td class="mono">{{ day.threats }}</td></tr>
+    {% else %}<tr><td colspan="3" class="empty">No history yet.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

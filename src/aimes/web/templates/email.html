@@ -1,0 +1,124 @@
+{% extends "base.html" %}{% from "macros.html" import band_class %}
+{% block title %}{{ email.subject or 'Email' }} - AIMES{% endblock %}
+{% block body %}
+<h1>{{ email.subject or '(no subject)' }}</h1>
+<p class="lede">
+  From {{ email.sender or 'unknown sender' }}
+  {% if email.sender_name %}(display name "{{ email.sender_name }}"){% endif %}
+  &middot; analysed {{ email.analyzed_at.replace('T',' ') }} by model {{ email.model_version }}
+</p>
+
+<div class="grid g4">
+  <div class="card readout"><div class="n {{ band_class(email.band) }}">{{ email.risk_score }}</div><div class="k">Risk score out of 100</div></div>
+  <div class="card readout"><div class="n">{{ email.base_class.replace('_',' ').title() }}</div><div class="k">Classification</div></div>
+  <div class="card readout"><div class="n">{{ (email.confidence*100)|round|int }}%</div><div class="k">Confidence</div></div>
+  <div class="card readout"><div class="n">{{ email.latency_ms|round(1) }}<span style="font-size:14px"> ms</span></div><div class="k">Analysis time</div></div>
+</div>
+
+{% if tags %}<p class="tagline" style="margin-top:14px">{% for tag in tags %}<span class="chip {{ band_class(email.band) }}">{{ tag.replace('_',' ') }}</span>{% endfor %}</p>{% endif %}
+
+<h2>Why this score</h2>
+<div class="card">
+  <ul class="reasons">{% for reason in reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+</div>
+
+<h2>Evidence by layer</h2>
+<div class="card">
+  <div class="strip">
+    {% for layer in layers %}
+      <div class="row {% if layer.score is none %}off{% endif %}">
+        <span class="name">{{ layer.label }}</span>
+        <span class="bar"><i style="width: {{ ((layer.score or 0)*100)|round|int }}%"></i></span>
+        <span class="val">{% if layer.score is none %}n/a{% else %}{{ ((layer.score)*100)|round|int }}{% endif %}</span>
+      </div>
+    {% endfor %}
+  </div>
+  <p class="note">Bar length is the layer's own score. A layer marked n/a abstained and was excluded from the fusion, with the remaining weights renormalised.</p>
+</div>
+
+{% if contributions %}
+<h2>Contribution to the fused decision</h2>
+<div class="card">
+  <div class="scroll"><table>
+    <thead><tr><th>Layer</th><th>Layer score</th><th>Contribution</th><th>Method</th></tr></thead>
+    <tbody>
+    {% for item in contributions %}
+      <tr><td>{{ item.layer }}</td>
+          <td class="mono">{% if item.score is none %}n/a{% else %}{{ item.score|round(3) }}{% endif %}</td>
+          <td class="mono">{{ item.contribution|round(4) }}</td>
+          <td class="note">{{ item.method }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p class="note">Positive values pushed this email towards "threat", negative values towards "legitimate".</p>
+</div>
+{% endif %}
+
+<h2>Layer detail</h2>
+{% for layer in layers %}
+<div class="card" style="margin-bottom:10px">
+  <h3>{{ layer.label }}{% if layer.score is not none %} &mdash; {{ (layer.score*100)|round|int }}/100{% endif %}</h3>
+  {% if layer.error %}<p class="note warn">Did not run: {{ layer.error }}</p>{% endif %}
+  <ul class="reasons">{% for item in layer.evidence %}<li>{{ item }}</li>{% endfor %}</ul>
+  {% if layer.features %}
+    <details><summary class="note">Features used</summary>
+      <pre class="mono" style="white-space:pre-wrap">{{ layer.features|tojson(indent=2) }}</pre>
+    </details>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% if terms %}
+<h2>Terms that moved the lexical model</h2>
+<div class="card">
+  {% for block in terms %}
+    <h3>{{ block.class }}</h3>
+    <p class="note">{% for term in block.terms %}<code>{{ term.term }}</code> {{ term.weight }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
+  {% endfor %}
+  <p class="note">Weight is the term's TF-IDF value multiplied by its model coefficient for that class.</p>
+</div>
+{% endif %}
+
+<h2>Was this right?</h2>
+<div class="card">
+  {% if email.feedback %}
+    <p class="note">Recorded: {% for item in email.feedback %}{{ item.verdict }}{% if item.corrected_label %} &rarr; {{ item.corrected_label }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}.
+    Feedback is used by <code>scripts/retrain_from_feedback.py</code>, never applied to the live model directly.</p>
+  {% endif %}
+  <form method="post" action="/api/feedback" class="row-form">
+    <input type="hidden" name="email_id" value="{{ email.id }}">
+    <div style="flex:0 0 150px">
+      <label for="verdict">Verdict</label>
+      <select id="verdict" name="verdict">
+        <option value="correct">Classification was right</option>
+        <option value="incorrect">Classification was wrong</option>
+      </select>
+    </div>
+    <div style="flex:0 0 190px">
+      <label for="corrected">It should have been</label>
+      <select id="corrected" name="corrected_label">
+        <option value="">(leave unchanged)</option>
+        {% for cls in classes %}<option value="{{ cls }}">{{ cls.replace('_',' ').title() }}</option>{% endfor %}
+      </select>
+    </div>
+    <div style="flex:1 1 220px">
+      <label for="note">Note (optional)</label>
+      <input id="note" name="note" maxlength="500" placeholder="What made it obvious?">
+    </div>
+    <button type="submit">Save feedback</button>
+  </form>
+</div>
+
+<h2>Message metadata</h2>
+<div class="card scroll">
+  <table>
+    <tr><td>Message ID</td><td class="mono">{{ email.message_id }}</td></tr>
+    <tr><td>Sender domain</td><td class="mono">{{ email.sender_domain }}</td></tr>
+    <tr><td>Links</td><td class="mono">{{ email.n_urls }}</td></tr>
+    <tr><td>Attachments</td><td class="mono">{{ email.n_attachments }}</td></tr>
+    <tr><td>Body SHA-256</td><td class="mono">{{ email.body_sha256[:32] }}...</td></tr>
+    <tr><td>Fusion strategy</td><td>{{ email.fusion }}</td></tr>
+  </table>
+  <p class="note">Links are shown defanged in the layer detail above and are never clickable. The message body is stored only if AIMES_STORE_RAW_BODY is enabled.</p>
+</div>
+{% endblock %}

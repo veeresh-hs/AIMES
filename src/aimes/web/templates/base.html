@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% block title %}AIMES{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail">
+    <div class="brand"><b>AIMES</b><span>Email threat console</span></div>
+    <a class="nav {% if active_page=='dashboard' %}on{% endif %}" href="/">Overview</a>
+    <a class="nav {% if active_page=='live' %}on{% endif %}" href="/live">Live monitor</a>
+    <a class="nav {% if active_page=='analytics' %}on{% endif %}" href="/analytics">Threat analytics</a>
+    <a class="nav {% if active_page=='models' %}on{% endif %}" href="/models">Model performance</a>
+    <a class="nav {% if active_page=='settings' %}on{% endif %}" href="/settings">Settings</a>
+    <div class="foot">
+      Mode {{ settings.mode }}<br>
+      {% if monitor.running %}Monitor running{% else %}Monitor stopped{% endif %}<br>
+      <a href="/logout">Sign out {{ user }}</a>
+    </div>
+  </nav>
+  <main class="main">{% block body %}{% endblock %}</main>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

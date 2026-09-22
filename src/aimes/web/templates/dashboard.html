@@ -1,0 +1,51 @@
+{% extends "base.html" %}{% from "macros.html" import band_class, email_rows %}
+{% block title %}Overview - AIMES{% endblock %}
+{% block body %}
+<h1>Overview</h1>
+<p class="lede">Everything below is computed from emails this system has actually analysed. Counts stay at zero until mail is processed.</p>
+
+<div class="grid g4">
+  <div class="card readout"><div class="n">{{ stats.total }}</div><div class="k">Emails analysed</div></div>
+  <div class="card readout"><div class="n critical">{{ stats.by_class.get('PHISHING', 0) }}</div><div class="k">Classified phishing</div></div>
+  <div class="card readout"><div class="n watch">{{ stats.by_class.get('PROMOTIONAL_SPAM', 0) }}</div><div class="k">Promotional spam</div></div>
+  <div class="card readout"><div class="n safe">{{ stats.by_class.get('HAM', 0) }}</div><div class="k">Legitimate</div></div>
+</div>
+
+<div class="grid g3" style="margin-top:14px">
+  <div class="card readout"><div class="n">{{ stats.avg_risk }}</div><div class="k">Mean risk score</div></div>
+  <div class="card readout"><div class="n">{{ stats.alerts }}</div><div class="k">Alerts raised</div></div>
+  <div class="card readout"><div class="n">{{ stats.avg_latency_ms }}<span style="font-size:14px"> ms</span></div><div class="k">Mean analysis time</div></div>
+</div>
+
+<h2>Volume over the last two weeks</h2>
+<div class="card">
+  {% if stats.timeline %}
+    {% set peak = stats.timeline|map(attribute='n')|max %}
+    <div class="spark">
+      {% for day in stats.timeline %}
+        <div style="height: {{ (day.n / peak * 100)|round|int if peak else 2 }}%" title="{{ day.d }}: {{ day.n }} analysed, {{ day.threats }} high risk"></div>
+      {% endfor %}
+    </div>
+    <div class="axis"><span>{{ stats.timeline[0].d }}</span><span>{{ stats.timeline[-1].d }}</span></div>
+  {% else %}<p class="empty">No history yet.</p>{% endif %}
+</div>
+
+<h2>Most recent</h2>
+{{ email_rows(recent) }}
+
+{% if alerts %}
+<h2>Alerts raised</h2>
+<div class="scroll"><table>
+  <thead><tr><th>Time</th><th>Channel</th><th>Delivered</th><th>Subject</th><th>Risk</th></tr></thead>
+  <tbody>
+  {% for alert in alerts %}
+    <tr><td class="mono">{{ alert.created_at[5:16].replace('T',' ') }}</td>
+        <td>{{ alert.channel }}</td>
+        <td>{{ 'yes' if alert.delivered else 'no - ' ~ (alert.detail or '') }}</td>
+        <td class="trunc"><a href="/email/{{ alert.email_id }}">{{ alert.subject or '(no subject)' }}</a></td>
+        <td class="risk">{{ alert.risk_score }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endif %}
+{% endblock %}

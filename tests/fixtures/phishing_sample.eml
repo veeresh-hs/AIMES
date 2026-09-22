@@ -1,0 +1,19 @@
+From: "Microsoft 365 Support" <no-reply@micros0ft-verify.tk>
+To: undisclosed-recipients:;
+Reply-To: account-recovery@mail.ru
+Subject: Urgent: your Microsoft account will be suspended in 24 hours
+Date: Tue, 4 Mar 2025 03:12:44 +0000
+Message-ID: <91823-aa@micros0ft-verify.tk>
+Authentication-Results: mx.google.com; spf=fail smtp.mailfrom=micros0ft-verify.tk; dkim=none; dmarc=fail
+Received: from unknown (HELO 45.132.9.11) by mx.google.com; Tue, 4 Mar 2025 03:12:40 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<p>Dear customer,</p>
+<p>We detected unauthorized activity on your account. Your account will be
+suspended unless you verify your identity immediately.</p>
+<p><a href="http://login.microsoft.com.secure-verify-account.tk/signin/confirm?id=88213&amp;session=%41%42%43">Verify your account now</a></p>
+<p>Failure to confirm your password within 24 hours will result in permanent closure.</p>
+<p>Microsoft Security Team</p>
+</body></html>

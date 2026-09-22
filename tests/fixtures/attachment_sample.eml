@@ -1,0 +1,22 @@
+From: Accounts Payable <billing@invoice-portal-secure.xyz>
+To: student@example.com
+Subject: Invoice 88231 overdue - payment required
+Date: Wed, 5 Mar 2025 11:20:00 +0000
+Message-ID: <inv88231@invoice-portal-secure.xyz>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="sep1"
+
+--sep1
+Content-Type: text/plain; charset=utf-8
+
+Your payment is overdue. Open the attached invoice and complete the wire
+transfer today to avoid legal action.
+
+--sep1
+Content-Type: application/octet-stream; name="invoice_88231.pdf.exe"
+Content-Disposition: attachment; filename="invoice_88231.pdf.exe"
+Content-Transfer-Encoding: base64
+
+TVpQAAIAAAAEAA8A//8AALgAAAAAAAAAQAAaAAAAAAA=
+
+--sep1--

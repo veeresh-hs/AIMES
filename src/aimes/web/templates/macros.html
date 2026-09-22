@@ -1,0 +1,22 @@
+{% macro band_class(band) %}{% if band=='CRITICAL' %}critical{% elif band=='HIGH_RISK' %}high{% elif band=='SUSPICIOUS' %}watch{% else %}safe{% endif %}{% endmacro %}
+
+{% macro email_rows(rows) %}
+<div class="scroll"><table>
+  <thead><tr><th>Analysed</th><th>From</th><th>Subject</th><th>Class</th><th>Risk</th><th>Confidence</th><th>Band</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td class="mono">{{ row.analyzed_at[5:16].replace('T',' ') }}</td>
+      <td class="trunc">{{ row.sender }}</td>
+      <td class="trunc"><a href="/email/{{ row.id }}">{{ row.subject or '(no subject)' }}</a></td>
+      <td>{{ row.base_class.replace('_',' ').title() }}</td>
+      <td class="risk {{ band_class(row.band) }}">{{ row.risk_score }}</td>
+      <td class="mono">{{ (row.confidence*100)|round|int }}%</td>
+      <td><span class="chip {{ band_class(row.band) }}">{{ row.band.replace('_',' ') }}</span></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="7" class="empty">Nothing analysed yet. Connect Gmail on the Settings page, or upload an .eml file there to see the full breakdown.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endmacro %}

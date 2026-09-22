@@ -1,0 +1,19 @@
+# Organisations this deployment expects to be impersonated.
+# Format: name,canonical-domain   (one per line, edit freely - no code change needed)
+paypal,paypal.com
+microsoft,microsoft.com
+apple,apple.com
+google,google.com
+amazon,amazon.com
+netflix,netflix.com
+dhl,dhl.com
+fedex,fedex.com
+dropbox,dropbox.com
+linkedin,linkedin.com
+coinbase,coinbase.com
+sbi,sbi.co.in
+hdfc,hdfcbank.com
+icici,icicibank.com
+axis,axisbank.com
+# Add your college or employer so internal impersonation is caught too:
+# mycollege,mycollege.edu

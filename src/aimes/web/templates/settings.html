@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Settings - AIMES{% endblock %}
+{% block body %}
+<h1>Settings</h1>
+<p class="lede">Configuration is read from <code>.env</code> at startup. This page shows what is in effect and lets you connect a mailbox or analyse a saved message.</p>
+
+<h2>Mailbox</h2>
+<div class="card">
+  <p class="note">
+    Provider: {{ monitor.provider or 'not connected' }} &middot;
+    polling every {{ monitor.interval_seconds }}s &middot;
+    {{ monitor.processed }} emails processed this session.
+    {% if monitor.last_error %}<br>Last error: {{ monitor.last_error }}{% endif %}
+  </p>
+  <div class="row-form">
+    <button data-monitor="start">Connect and start monitoring</button>
+    <button class="ghost" data-monitor="poll">Check for new mail now</button>
+    <button class="ghost" data-monitor="stop">Stop</button>
+    <span class="note" data-monitor-status></span>
+  </div>
+  <p class="note" style="margin-top:10px">
+    First connection must be authorised from a terminal so the browser consent screen can open:
+    <code>python scripts/connect_gmail.py</code>. The app requests read access only
+    {% if settings.gmail_allow_modify %}(plus label writing, which you have enabled){% endif %};
+    it never asks for your password and cannot delete mail.
+  </p>
+</div>
+
+<h2>Analyse a saved message</h2>
+<div class="card">
+  <form method="post" action="/api/analyze" enctype="multipart/form-data" class="row-form">
+    <div style="flex:1 1 280px">
+      <label for="file">An .eml file exported from any mail client</label>
+      <input id="file" type="file" name="file" accept=".eml,.txt,message/rfc822" required>
+    </div>
+    <button type="submit">Analyse it</button>
+  </form>
+  <p class="note">This is the offline demo path: it exercises every layer without touching a mailbox.</p>
+</div>
+
+<h2>In effect</h2>
+<div class="card scroll">
+  <table>
+    <tr><td>Runtime mode</td><td class="mono">{{ settings.mode }}</td></tr>
+    <tr><td>Active model version</td><td class="mono">{{ registry.active or 'none - run scripts/train_all.py' }}</td></tr>
+    <tr><td>Fusion strategy</td><td class="mono">{{ settings.fusion }}</td></tr>
+    <tr><td>Alert threshold</td><td class="mono">{{ settings.alert_threshold }}/100</td></tr>
+    <tr><td>Risk bands</td><td class="mono">suspicious {{ settings.band_suspicious }}, high {{ settings.band_high }}, critical {{ settings.band_critical }}</td></tr>
+    <tr><td>Store message bodies</td><td class="mono">{{ 'yes, purged after %d days'|format(settings.body_retention_days) if settings.store_raw_body else 'no' }}</td></tr>
+    <tr><td>Gmail write access</td><td class="mono">{{ 'labels only' if settings.gmail_allow_modify else 'read-only' }}</td></tr>
+    <tr><td>Telegram alerts</td><td class="mono">{{ 'configured' if settings.telegram_token else 'off' }}</td></tr>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sign in - AIMES</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="login">
+  <form class="card" method="post" action="/login">
+    <h1>AIMES</h1>
+    <p class="note">Email threat console, running on this machine.</p>
+    {% if needs_setup %}
+      <p class="warn note">No account exists yet. Create one first:<br>
+      <code>python scripts/init_db.py --user admin</code></p>
+    {% endif %}
+    {% if error %}<p class="warn note">{{ error }}</p>{% endif %}
+    <p><label for="u">Username</label><input id="u" name="username" autocomplete="username" required autofocus></p>
+    <p><label for="p">Password</label><input id="p" name="password" type="password" autocomplete="current-password" required></p>
+    <p><button type="submit">Sign in</button></p>
+  </form>
+</div>
+</body>
+</html>

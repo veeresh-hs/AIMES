@@ -1,0 +1,20 @@
+AIMES - quick start (Windows)
+
+  cd <this folder>
+  python -m venv venv
+  venv\Scripts\activate
+  pip install -r requirements.txt
+  copy .env.example .env
+  python -c "import secrets;print(secrets.token_hex(32))"     <- paste into AIMES_SESSION_SECRET in .env
+
+  python scripts\init_db.py --user admin
+  python scripts\analyze_eml.py tests\fixtures\phishing_sample.eml    <- works immediately, rule layers only
+
+  python scripts\download_data.py      <- fetches SpamAssassin + Enron-Spam, prints licences
+  python scripts\train_all.py          <- trains every layer, writes models\v1
+  python scripts\run_experiments.py    <- writes data\reports\experiments.md for your report
+  python scripts\run_dashboard.py      <- http://127.0.0.1:8000
+
+  python scripts\connect_gmail.py      <- optional: OAuth consent in your browser (read-only)
+
+Read README.md next. docs\ has the report outline, paper skeleton and viva prep.
