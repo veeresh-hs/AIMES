@@ -11,3 +11,9 @@ models/*.pkl
 models/*.joblib
 models/v1/*.joblib
 .venv/
+
+# Security & Secrets
+secrets/
+credentials.json
+token.enc
+.env
