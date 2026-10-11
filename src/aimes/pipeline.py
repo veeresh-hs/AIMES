@@ -1,6 +1,7 @@
 """The analysis pipeline: parsed email in, AnalysisResult out."""
 from __future__ import annotations
 
+import concurrent.futures
 import time
 from pathlib import Path
 
@@ -60,7 +61,16 @@ class Pipeline:
 
     def analyze(self, email: ParsedEmail) -> AnalysisResult:
         start = time.perf_counter()
-        layers = {name: detector.analyze(email) for name, detector in self.detectors.items()}
+        layers = {}
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_to_name = {
+                executor.submit(detector.analyze, email): name 
+                for name, detector in self.detectors.items()
+            }
+            for future in concurrent.futures.as_completed(future_to_name):
+                name = future_to_name[future]
+                layers[name] = future.result()
+
         result = self.engine.combine(layers, message_id=email.message_id,
                                      model_version=self.version or "untrained")
         result.total_latency_ms = (time.perf_counter() - start) * 1000

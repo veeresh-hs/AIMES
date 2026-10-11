@@ -76,17 +76,36 @@ def clean_body(text_part: str, html_part: str = "", limit: int = 20000) -> str:
 
 
 def extract_urls(text_part: str, html_part: str = "") -> list[str]:
-    """Collect URLs from plain text and from href attributes. No fetching."""
+    """Collect URLs from plain text and from href attributes using DOM parsing if available."""
     found: list[str] = []
+    
+    # 1. Extract from plain text
     for match in URL_RE.finditer(text_part or ""):
         found.append(match.group(1))
-    for href in HTML_HREF_RE.findall(html_part or ""):
-        href = href.strip()
-        if href.lower().startswith(("http://", "https://", "ftp://", "www.")):
-            found.append(href)
-    for match in URL_RE.finditer(strip_html(html_part or "")):
-        found.append(match.group(1))
+        
+    # 2. Extract from HTML
+    if html_part:
+        if _HAS_BS4:
+            try:
+                soup = BeautifulSoup(html_part, "html.parser")
+                for a_tag in soup.find_all("a", href=True):
+                    href = a_tag["href"].strip()
+                    if href.lower().startswith(("http://", "https://", "ftp://", "www.")):
+                        found.append(href)
+            except Exception:
+                pass
+        else:
+            # Fallback to regex if BeautifulSoup is not installed
+            for href in HTML_HREF_RE.findall(html_part):
+                href = href.strip()
+                if href.lower().startswith(("http://", "https://", "ftp://", "www.")):
+                    found.append(href)
+                    
+        # Catch raw URLs floating in the HTML body text
+        for match in URL_RE.finditer(strip_html(html_part)):
+            found.append(match.group(1))
 
+    # 3. Deduplicate and normalize
     seen, out = set(), []
     for url in found:
         url = url.rstrip(".,;:!?)\"'")
@@ -164,7 +183,7 @@ def levenshtein(a: str, b: str) -> int:
 def similarity(a: str, b: str) -> float:
     if not a or not b:
         return 0.0
-    return 1.0 - levenshtein(a, b) / max(len(a), len(b))
+    return 1.0 - (levenshtein(a, b) / max(len(a), len(b)))
 
 
 def defang(url: str) -> str:

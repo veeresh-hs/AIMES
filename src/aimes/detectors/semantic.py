@@ -48,7 +48,7 @@ def load_backend(model_dir) -> EmbeddingBackend | None:
     try:
         from sentence_transformers import SentenceTransformer  # type: ignore
 
-        model = SentenceTransformer(settings.semantic_model, device="cpu")
+        model = SentenceTransformer(settings.semantic_model)
         return EmbeddingBackend("minilm", model)
     except Exception:
         pass

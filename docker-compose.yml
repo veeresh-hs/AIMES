@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  aimes:
+    build: .
+    container_name: aimes_app
+    ports:
+      - "8000:8000"
+    volumes:
+      # Maps your local models and data folders into the container
+      - ./models:/app/models
+      - ./data:/app/data
+    env_file:
+      # Loads variables from your .env file
+      - .env.example
+    restart: unless-stopped

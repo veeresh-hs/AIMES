@@ -23,6 +23,7 @@ class TransformerDetector(Detector):
         self.pipe = None
         self.classes: list[str] = []
         self.reason = "not loaded"
+        self.device = "cpu"
 
     def load(self, model_dir) -> "TransformerDetector":
         if settings.mode != "ADVANCED":
@@ -40,8 +41,9 @@ class TransformerDetector(Detector):
             self.reason = f"transformers/torch unavailable: {type(exc).__name__}"
             return self
         try:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
             self.tokenizer = AutoTokenizer.from_pretrained(str(path))
-            self.model = AutoModelForSequenceClassification.from_pretrained(str(path))
+            self.model = AutoModelForSequenceClassification.from_pretrained(str(path)).to(self.device)
             self.model.eval()
             label_map = self.model.config.id2label
             self.classes = [label_map[i] for i in sorted(label_map)]
@@ -54,7 +56,7 @@ class TransformerDetector(Detector):
     def predict_proba(self, text: str) -> dict[str, float]:
         import torch
 
-        batch = self.tokenizer(text, truncation=True, max_length=256, return_tensors="pt")
+        batch = self.tokenizer(text, truncation=True, max_length=512, return_tensors="pt").to(self.device)
         with torch.no_grad():
             logits = self.model(**batch).logits[0]
             probs = torch.softmax(logits, dim=-1).tolist()
